@@ -1,0 +1,47 @@
+# used ml stuff
+pytorch_lightning
+webdataset
+
+# jupyter notebook
+notebook
+jupyterhub
+jupyterlab
+ipywidgets
+jupyter_http_over_ws
+jupyterlab-git
+jupyterlab-lsp
+python-lsp-server[all]
+aquirdturtle_collapsible_headings
+ipympl
+
+wandb
+
+# misc used
+more-itertools
+cloudpickle
+
+
+
+
+# probably handy
+# aws
+boto3
+
+# basic deps and helpers
+cmake
+cython
+imutils
+numpy
+Pillow
+
+# unused ml stuff
+#scikit-image
+#scikit-learn
+#sklearn
+#simdkalman
+#datumaro
+#pycocotools
+
+# not sure needed
+# opencv-contrib-python # not sure needed yet
+# pandas

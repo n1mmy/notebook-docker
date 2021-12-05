@@ -1,47 +1,26 @@
-# used ml stuff
+# ml stuff
+Pillow
+imutils
+numpy
 pytorch_lightning
+wandb
 webdataset
 
 # jupyter notebook
-notebook
-jupyterhub
-jupyterlab
-ipywidgets
-jupyter_http_over_ws
-jupyterlab-git
-jupyterlab-lsp
-python-lsp-server[all]
 aquirdturtle_collapsible_headings
 ipympl
+ipywidgets
+jupyter_http_over_ws
+jupyterhub
+jupyterlab
+jupyterlab-git
+jupyterlab-lsp
+notebook
+python-lsp-server[all]
 
-wandb
-
-# misc used
-more-itertools
-cloudpickle
-
-
-
-
-# probably handy
-# aws
+# additional useful
 boto3
-
-# basic deps and helpers
+cloudpickle
 cmake
 cython
-imutils
-numpy
-Pillow
-
-# unused ml stuff
-#scikit-image
-#scikit-learn
-#sklearn
-#simdkalman
-#datumaro
-#pycocotools
-
-# not sure needed
-# opencv-contrib-python # not sure needed yet
-# pandas
+more-itertools

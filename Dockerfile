@@ -23,10 +23,16 @@ RUN pip3 -q install --upgrade pip \
         && pip3 -q install torch==1.10.0+cu113 torchvision==0.11.1+cu113 -f https://download.pytorch.org/whl/torch_stable.html \
         && rm -rf ~/.cache/pip
 
-# rest of the pytorch requirements
+# rest of the python requirements
 COPY requirements.txt .
 RUN pip3 -q install -r requirements.txt && \
         rm -rf ~/.cache/pip
+
+# node16 for notebook extensions
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+        && apt-get install -qqy nodejs > /dev/null \
+        && apt-get clean -qqy
+RUN jupyter labextension install jupyter-matplotlib > /dev/null
 
 
 # Running the notebook server

@@ -21,6 +21,7 @@ notebook
 python-lsp-server[all]
 
 # additional useful
+awscli
 boto3
 cloudpickle
 cmake

@@ -31,6 +31,7 @@ RUN pip3 -q install -r requirements.txt && \
 
 # Running the notebook server
 COPY run-notebook-server.sh .
-RUN chmod 755 ./run-notebook-server.sh
+RUN chmod 755 ./run-notebook-server.sh && mkdir -p notebooks
+EXPOSE 8888
 
 CMD ["/root/run-notebook-server.sh"]

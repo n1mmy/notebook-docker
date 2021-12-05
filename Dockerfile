@@ -36,8 +36,8 @@ RUN jupyter labextension install jupyter-matplotlib > /dev/null
 
 
 # Running the notebook server
-COPY run-notebook-server.sh .
-RUN chmod 755 ./run-notebook-server.sh && mkdir -p notebooks
+COPY run-notebook.sh run-notebook-server.sh ./
+RUN chmod 755 ./*.sh && mkdir -p notebooks
 EXPOSE 8888
 
 CMD ["/root/run-notebook-server.sh"]

@@ -4,20 +4,21 @@ This is under development and not ready for public use.
 
 # Introduction
 
-This repo contains build scripts and instructions for a Jupyter notebook server with a recent CUDA-enabled pytorch using docker.
+This repo contains build scripts and instructions for a Jupyter notebook server with a recent CUDA-enabled pytorch using docker. Additionally there are build configurations and example files for building and deploying the image in the cloud.
 
-Additionally there are build configurations and example files for building and deploying the image in the cloud.
+I use this personally as a base image for machine learning experiments in the cloud. It may not be maintained or updated on a timely basis, and may change without warning.
 
 It has:
 - Ubuntu 20.04 base image
 - CUDA 11.5 libraries
 - pytorch 1.10 with torchvision
 - JupyterLab notebook server
-- Node 16 for notebook extensions
+- Node.js 16 for notebook extensions
 - `aws` command line tools and python packages.
 
 
-You can use a pre-built image directly from `ghcr.io` as a complete solution or as a base layer to build on top of. Or you can fork this repo and modify the build scripts for your own use case.
+For quick experiments you can use a pre-built image directly from `ghcr.io/n1mmy/notebook`, either as a complete solution or as a base layer to build on top of. For production use or for customization, you may wish to fork this repository and build the image yourself.
+
 
 
 # Table of Contents
@@ -60,7 +61,7 @@ To allow customization, the contents of the `NOTEBOOK_EXTRA_ARGS` environment va
 ```
 docker run -it --gpus all -p 8888:8888 \
   -v ~/my_notebook_dir:/root/notebooks \
-  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:56170f5429b35dea081bb659b884b475ca9329a9'
+  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:56170f5429b35dea081bb659b884b475ca9329a9' \
   ghcr.io/n1mmy/notebook
 ```
 
@@ -68,6 +69,14 @@ Or, if you prefer to disable the password and only allow connections from `local
 
 ### `/root/run-notebook.sh`
 
+There is an additional shell script packaged in the image designed to allow for running Jupyter notebooks from the command line and in automated jobs.
+
+The script `/root/run-notebook.sh` takes a the first argument as a path to a notebook (`.ipynb`) file. It converts this notebook file to a plain python script then runs that script, passing it any additional command line arguments.
+
+Here is an example docker command that to run a notebook file and print the output to stdout.
+
+
+An example Kubernetes manifest for a Job that runs a notebook, see XXXexample-k8s-job.yaml
 
 
 ### `docker --shm-size`
@@ -100,9 +109,79 @@ XXX
 
 ## Kubernetes
 
-There is an example manifest for a deployment of the notebook server in `example-k8s-deployment.yaml`.
+There is an example manifest for a deployment of the notebook server in `example-k8s-deployment.yaml`. XXX link
+
+There is also an example manifest for creating a Job that runs a notebook file in `example-k8s-job.yaml`. XXX create and link
 
 
-## Ubuntu 20.04 Cloud Images
+## Bare AWS instances with EFS
+
+Here is a process to get a notebook server (or multiple servers) running in AWS with persistent shared storage on Elastic File System. I find this a convienient setup as it allows for XXX
+
+The process should be basically the same on other cloud providers as well.
+
+#. Create an EFS instance
+ - Visit https://console.aws.amazon.com/efs/home and click "Create file system"
+
+#. Start an instance running Ubuntu 20.04
+ - Visit https://console.aws.amazon.com/ec2/v2/home and click "Launch instance"
+ - Type "Ubuntu" into the AMI search box and select "Ubuntu Server 20.04 LTS (HVM), SSD Volume Type" (AMI ID will vary by region)
+ - Pick an instance type with a GPU (The new `g5` instances are relatively cheap and quite nice). Click 'Configure Instance Details' not 'Review and Launch' for more options.
+ - On the instance details page
+  - Add the EFS instance by clicking "Add file system"
+  - If you want to have the instance able to perform AWS API calls, remember to select a role for the machine on this page.
+  - You may also want to request a Spot instance to pay less money.
+  - Click "Add Storage" to move to the next page.
+ - On the Add Storage page change the size of the root disk. The default 8GB is too small for this image. At least 50GB is recommended.
+ - Optionally, continue through "Add tags" to "Configure security groups". The default of only allowing SSH is good, and you can use SSH port forwarding to access the notebook server. However, if you want to expose the notebook server to the internet (not recommended) you can add access to port 8888 here.
+ - Launch the instance.
+
+#. Once the instance is running, ssh in with port forwarding
+ - `ssh -L 8888:localhost:8888 ubuntu@IP_OF_INSTANCE`
+
+#. Setup nvidia driver and docker
+```
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 
 
+sudo wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin" -O /etc/apt/preferences.d/cuda-repository-pin-600
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+
+
+sudo apt install -y --no-install-recommends nvidia-driver-495 nvidia-settings nvidia-docker2
+
+sudo modprobe nvidia
+```
+
+#. Confirm GPU detected.
+ - Run `nvidia-smi` and see your GPU in the output.
+
+#. Add local storage (skip if your instance type doesn't have this)
+```
+sudo mkfs.ext4 /dev/nvme1n1
+sudo mkdir /mnt/local
+sudo mount /dev/nvme1n1 /mnt/local
+```
+
+#. Run notebook server
+```
+# password: 'hi there'
+# remove /mnt/local line if no instance local storage
+# adjust shm-size argument based on instance RAM size
+sudo docker run -d --gpus all -p 8888:8888 \
+  --shm-size 64G \
+  -v /mnt/efs/fs1/my_notebook_dir:/root/notebooks \
+  -v /mnt/local:/root/notebooks/local \
+  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:56170f5429b35dea081bb659b884b475ca9329a9' \
+  ghcr.io/n1mmy/notebook
+```
+
+
+# TODO
+
+- different image flavors (eg w/ and w/o aws)
+- opencv gpu build
+- decord

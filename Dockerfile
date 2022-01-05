@@ -21,7 +21,7 @@ RUN wget -q "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004
 
 # GPU version of torch
 RUN pip3 -q install --upgrade pip \
-        && pip3 -q install torch==1.10.0+cu113 torchvision==0.11.1+cu113 -f https://download.pytorch.org/whl/torch_stable.html \
+        && pip3 -q install torch==1.10.1+cu113 torchvision==0.11.2+cu113 -f https://download.pytorch.org/whl/torch_stable.html \
         && rm -rf ~/.cache/pip
 
 # rest of the python requirements

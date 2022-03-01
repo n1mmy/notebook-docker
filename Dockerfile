@@ -15,13 +15,13 @@ RUN apt-get update -qqy && \
 RUN wget -q "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin" -O /etc/apt/preferences.d/cuda-repository-pin-600 \
         && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub \
         && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
-        apt-get install -qqy --no-install-recommends nvidia-utils-495 libgl-dev cuda-11-5 libcudnn8 libcudnn8-dev > /dev/null && \
+        apt-get install -qqy --no-install-recommends nvidia-utils-510 libgl-dev cuda-11-5 libcudnn8 libcudnn8-dev > /dev/null && \
         apt-get clean -qqy
 
 
 # GPU version of torch
 RUN pip3 -q install --upgrade pip \
-        && pip3 -q install torch==1.10.1+cu113 torchvision==0.11.2+cu113 -f https://download.pytorch.org/whl/torch_stable.html \
+        && pip3 -q install torch==1.10.2+cu113 torchvision==0.11.3+cu113 -f https://download.pytorch.org/whl/torch_stable.html \
         && rm -rf ~/.cache/pip
 
 # rest of the python requirements
@@ -33,6 +33,8 @@ RUN pip3 -q install -r requirements.txt && \
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
         && apt-get install -qqy nodejs > /dev/null \
         && apt-get clean -qqy
+
+# activate notebook extentions
 RUN jupyter labextension install jupyter-matplotlib > /dev/null
 
 

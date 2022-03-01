@@ -15,7 +15,7 @@ RUN apt-get update -qqy && \
 RUN wget -q "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin" -O /etc/apt/preferences.d/cuda-repository-pin-600 \
         && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub \
         && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
-        apt-get install -qqy --no-install-recommends nvidia-utils-510 libgl-dev cuda-11-5 libcudnn8 libcudnn8-dev > /dev/null && \
+        apt-get install -qqy --no-install-recommends nvidia-utils-510 libgl-dev cuda-11-6 libcudnn8 libcudnn8-dev > /dev/null && \
         apt-get clean -qqy
 
 

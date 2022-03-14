@@ -11,7 +11,7 @@ I use this personally as a base image for machine learning experiments in the cl
 It has:
 - Ubuntu 20.04 base image
 - CUDA 11.6 libraries
-- pytorch 1.10 with torchvision
+- pytorch 1.11 with torchvision
 - JupyterLab notebook server
 - Node.js 16 for notebook extensions
 - `aws` command line tools and python packages.

@@ -1,0 +1,49 @@
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: notebook-job
+spec:
+  template:
+    spec:
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      - name: storage
+        emptyDir: {}
+      initContainers:
+      - image: alpine/git:latest
+        name: git
+        volumeMounts:
+        - mountPath: /storage
+          name: storage
+        command:
+        - git
+        args:
+        - clone
+        - https://github.com/n1mmy/notebook-docker
+        - /storage
+      containers:
+      - image: ghcr.io/n1mmy/notebook:latest
+        name: notebook
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /root/notebooks
+          name: storage
+        command:
+        - /root/run-notebook.sh
+        args:
+        - /root/notebooks/example.ipynb
+        - more
+        - args
+        resources:
+          ## Uncomment to add a GPU
+          # limits:
+          #  nvidia.com/gpu: 1
+          requests:
+            cpu: 1
+      restartPolicy: Never
+  backoffLimit: 0

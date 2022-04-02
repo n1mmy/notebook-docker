@@ -20,15 +20,29 @@ It has:
 For quick experiments you can use a pre-built image directly from `ghcr.io/n1mmy/notebook`, either as a complete solution or as a base layer to build on top of. For production use or for customization, you may wish to fork this repository and build the image yourself.
 
 
-
 # Table of Contents
+
+* [Local usage](#local-usage)
+  * [Quickstart](#quickstart)
+  * [Building the image](#building-the-image)
+  * [Additional customization](#additional-customization)
+    * [NOTEBOOK_EXTRA_ARGS](#notebook-extra-args)
+    * [run-notebook.sh](#root-run-notebook.sh)
+    * [docker --shm-size](#docker---shm-size)
+* [Building in the cloud](#building-in-the-cloud)
+  * [Google Cloud Build](#google-cloud-build)
+  * [AWS CodeBuild](#aws-codebuild)
+* [Running in the cloud](#running-in-the-cloud)
+  * [Kubernetes](#kubernetes)
+  * [Bare AWS instances with EFS](#bare-aws-instances-with-efs)
+* [TODO](#todo)
 
 
 # Local usage
 
 ## Quickstart
 
-If you have a machine with an NVIDIA GPU-enabled version of docker installed [1], you can get started quickly using a pre-built image:
+If you have a machine with an NVIDIA GPU-enabled version of docker installed [1](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html), you can get started quickly using a pre-built image:
 
 ```
 docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook
@@ -56,7 +70,7 @@ docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks note
 
 ### `NOTEBOOK_EXTRA_ARGS`
 
-To allow customization, the contents of the `NOTEBOOK_EXTRA_ARGS` environment variable are passed to the JupyterLab server process as command line arguments. This can be used, for example, to set a password on the server instead of having to get a new unique URL each time. The following sets up a notebook server with the password `hi there` (compute the hash for your own password with `echo -n 'your password' | shasum`):
+To allow customization the contents of the `NOTEBOOK_EXTRA_ARGS` environment variable are passed to the JupyterLab server process as command line arguments. This can be used, for example, to set a password on the server instead of having to get a new unique URL each time. The following sets up a notebook server with the password `hi there` (compute the hash for your own password with `echo -n 'your password' | shasum`):
 
 ```
 docker run -it --gpus all -p 8888:8888 \
@@ -65,7 +79,11 @@ docker run -it --gpus all -p 8888:8888 \
   ghcr.io/n1mmy/notebook
 ```
 
-Or, if you prefer to disable the password and only allow connections from `localhost` 
+Or, if you prefer to disable the password and only allow connections from `localhost`:
+
+```
+XXX
+```
 
 ### `/root/run-notebook.sh`
 
@@ -76,7 +94,7 @@ The script `/root/run-notebook.sh` takes a the first argument as a path to a not
 Here is an example docker command that to run a notebook file and print the output to stdout.
 
 
-An example Kubernetes manifest for a Job that runs a notebook, see XXXexample-k8s-job.yaml
+An example Kubernetes manifest for a Job that runs a notebook is available in [example-k8s-job.yaml](example-k8s-job.yaml)
 
 
 ### `docker --shm-size`
@@ -87,7 +105,7 @@ If you encounter out of memory errors while seeming to have lots of memory avail
 
 The file `example-k8s-deployment.yaml` in this repository demonstrates how to give access to shared memory in a Kubernetes deployment using a volume mounted to `/dev/shm`.
 
-# Cloud Building
+# Building in the cloud
 
 ## Google Cloud Build
 
@@ -95,28 +113,25 @@ There is a `cloudbuild.yaml` file provided that builds the image and pushes it t
 
 See https://cloud.google.com/build/docs/quickstart-automate for a tutorial on setting up a Cloud Build Trigger. You can use this repository instead of the example repo.
 
-Quick outline of steps using the GCP web console:
-- Fork this repo to your own GitHub account
-- 'Connect Repository' on the Cloud Build page in the web console.
- - Go through the GitHub OAuth flow for cloud builder if you haven't already.
- - XXX
-- 'Create Trigger' on the Cloud Build page in the web console.
-XXX
-
 ## AWS CodeBuild
+
+There is a `buildspec.yml` file provided that builds the image and pushes it to Amazon Elastic Container Registry.
+
+See https://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html for a tutorial on setting up a Codebuild to build the image. You can use this repository directly from Github or fork/copy it to a different Codebuild compatible source.
+
 
 # Running in the cloud
 
 ## Kubernetes
 
-There is an example manifest for a deployment of the notebook server in `example-k8s-deployment.yaml`. XXX link
+There is an example manifest for a deployment of the notebook server in [example-k8s-deployment.yaml](example-k8s-deployment.yaml).
 
-There is also an example manifest for creating a Job that runs a notebook file in `example-k8s-job.yaml`. XXX create and link
+There is also an example manifest for creating a Job that runs a notebook file in [example-k8s-job.yaml](example-k8s-job.yaml).
 
 
 ## Bare AWS instances with EFS
 
-Here is a process to get a notebook server (or multiple servers) running in AWS with persistent shared storage on Elastic File System. I find this a convienient setup as it allows for XXX
+Here is a process to get a notebook server (or multiple servers) running in AWS with persistent shared storage on Elastic File System. I find this a convienient setup as it allows for using starting and stopping instances as needed, as well as multiple instances at once.
 
 The process should be basically the same on other cloud providers as well.
 
@@ -157,7 +172,7 @@ sudo modprobe nvidia
 ```
 
 #. Confirm GPU detected.
- - Run `nvidia-smi` and see your GPU in the output.
+ - Run `nvidia-smi` and see a GPU in the output.
 
 #. Add local storage (skip if your instance type doesn't have this)
 ```

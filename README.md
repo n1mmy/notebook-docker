@@ -26,8 +26,8 @@ For quick experiments you can use a pre-built image directly from `ghcr.io/n1mmy
   * [Quickstart](#quickstart)
   * [Building the image](#building-the-image)
   * [Additional customization](#additional-customization)
-    * [NOTEBOOK_EXTRA_ARGS](#notebook-extra-args)
-    * [run-notebook.sh](#root-run-notebook.sh)
+    * [NOTEBOOK_EXTRA_ARGS](#notebook_extra_args)
+    * [run-notebook.sh](#rootrun-notebooksh)
     * [docker --shm-size](#docker---shm-size)
 * [Building in the cloud](#building-in-the-cloud)
   * [Google Cloud Build](#google-cloud-build)
@@ -135,10 +135,10 @@ Here is a process to get a notebook server (or multiple servers) running in AWS 
 
 The process should be basically the same on other cloud providers as well.
 
-#. Create an EFS instance
+1. Create an EFS instance
  - Visit https://console.aws.amazon.com/efs/home and click "Create file system"
 
-#. Start an instance running Ubuntu 20.04
+2. Start an instance running Ubuntu 20.04
  - Visit https://console.aws.amazon.com/ec2/v2/home and click "Launch instance"
  - Type "Ubuntu" into the AMI search box and select "Ubuntu Server 20.04 LTS (HVM), SSD Volume Type" (AMI ID will vary by region)
  - Pick an instance type with a GPU (The new `g5` instances are relatively cheap and quite nice). Click 'Configure Instance Details' not 'Review and Launch' for more options.
@@ -151,10 +151,10 @@ The process should be basically the same on other cloud providers as well.
  - Optionally, continue through "Add tags" to "Configure security groups". The default of only allowing SSH is good, and you can use SSH port forwarding to access the notebook server. However, if you want to expose the notebook server to the internet (not recommended) you can add access to port 8888 here.
  - Launch the instance.
 
-#. Once the instance is running, ssh in with port forwarding
+3. Once the instance is running, ssh in with port forwarding
  - `ssh -L 8888:localhost:8888 ubuntu@IP_OF_INSTANCE`
 
-#. Setup nvidia driver and docker
+4. Setup nvidia driver and docker
 ```
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
 curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
@@ -171,17 +171,17 @@ sudo apt install -y --no-install-recommends nvidia-driver-495 nvidia-settings nv
 sudo modprobe nvidia
 ```
 
-#. Confirm GPU detected.
+5. Confirm GPU detected.
  - Run `nvidia-smi` and see a GPU in the output.
 
-#. Add local storage (skip if your instance type doesn't have this)
+6. Add local storage (skip if your instance type doesn't have this)
 ```
 sudo mkfs.ext4 /dev/nvme1n1
 sudo mkdir /mnt/local
 sudo mount /dev/nvme1n1 /mnt/local
 ```
 
-#. Run notebook server
+7. Run notebook server
 ```
 # password: 'hi there'
 # remove /mnt/local line if no instance local storage

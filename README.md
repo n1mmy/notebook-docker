@@ -166,7 +166,7 @@ sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda
 sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 
 
-sudo apt install -y --no-install-recommends nvidia-driver-495 nvidia-settings nvidia-docker2
+sudo apt install -y --no-install-recommends nvidia-driver-510 nvidia-settings nvidia-docker2
 
 sudo modprobe nvidia
 ```

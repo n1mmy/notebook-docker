@@ -1,7 +1,3 @@
-# WORK IN PROGRESS
-
-This is under development and not ready for public use.
-
 # Introduction
 
 This repo contains build scripts and instructions for a Jupyter notebook server with a recent CUDA-enabled pytorch using docker. Additionally there are build configurations and example files for building and deploying the image in the cloud.
@@ -42,7 +38,7 @@ For quick experiments you can use a pre-built image directly from `ghcr.io/n1mmy
 
 ## Quickstart
 
-If you have a machine with an NVIDIA GPU-enabled version of docker installed [1](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html), you can get started quickly using a pre-built image:
+If you have a machine with an NVIDIA GPU-enabled version of docker installed [[guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)], you can get started quickly using a pre-built image:
 
 ```
 docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook

@@ -48,7 +48,7 @@ If you have a machine with an NVIDIA GPU-enabled version of docker installed [1]
 docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook
 ```
 
-This will print a URL to the console like XXX. Load this in your browser and you should have a functional Jupyter installation ready for your experiments.
+This will print a URL to the console like `http://127.0.0.1:8888/lab?token=f981019486f356267af792986cea36c3c4bc9d106a30952b`. Load this in your browser and you should have a functional Jupyter installation ready for your experiments.
 
 ## Building the image
 
@@ -82,8 +82,13 @@ docker run -it --gpus all -p 8888:8888 \
 Or, if you prefer to disable the password and only allow connections from `localhost`:
 
 ```
-XXX
+docker run -it --gpus all -p 127.0.0.1:8888:8888 \
+  -v ~/my_notebook_dir:/root/notebooks \
+  -e "NOTEBOOK_EXTRA_ARGS=--NotebookApp.password='' --NotebookApp.token=''" \
+  ghcr.io/n1mmy/notebook
 ```
+
+*NOTE*: turning off password/token authentication can be dangerous. Be sure you understand the security implications and limit access to the notebook server port.
 
 ### `/root/run-notebook.sh`
 

@@ -5,9 +5,9 @@ This repo contains build scripts and instructions for a Jupyter notebook server 
 I use this personally as a base image for machine learning experiments in the cloud. It may not be maintained or updated on a timely basis, and may change without warning.
 
 It has:
-- Ubuntu 20.04 base image
-- CUDA 11.6 libraries
-- pytorch 1.11 with torchvision
+- Ubuntu 22.04 base image
+- CUDA 11.7 libraries
+- pytorch 1.12.1 with torchvision
 - JupyterLab notebook server
 - Node.js 16 for notebook extensions
 - `aws` command line tools and python packages.

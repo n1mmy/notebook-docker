@@ -7,12 +7,14 @@ if [ -z "$NOTEBOOK" ] ; then
    exit 1
 fi
 
+IPYTHON=${IPYTHON:-ipython3}
+
 tmpfile=$(mktemp /tmp/notebook.exec.XXXXXX.py)
 jupyter nbconvert --log-level WARN --to python "$NOTEBOOK" --output "$tmpfile"
 
 cd $(dirname $NOTEBOOK)
 shift # drop notebook name from args
-ipython3 "$tmpfile" -- $@
+$IPYTHON "$tmpfile" -- $@
 exitcode=$?
 
 rm -f "$tmpfile"

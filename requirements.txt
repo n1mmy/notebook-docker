@@ -9,7 +9,6 @@ wandb
 webdataset
 
 # jupyter notebook
-aquirdturtle_collapsible_headings
 ipympl
 ipywidgets
 jupyter_http_over_ws

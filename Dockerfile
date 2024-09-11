@@ -15,13 +15,13 @@ RUN apt-get update -qqy && \
 RUN wget -q "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin" -O /etc/apt/preferences.d/cuda-repository-pin-600 \
         && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub \
         && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /" && \
-        apt-get install -qqy --no-install-recommends nvidia-utils-550  libgl-dev cuda-12-4 > /dev/null && \
+        apt-get install -qqy --no-install-recommends nvidia-utils-560  libgl-dev cuda-12-4 > /dev/null && \
         apt-get clean -qqy
 
 
 # GPU version of torch
 RUN pip3 --no-cache-dir -q install --upgrade pip \
-        && pip3 --no-cache-dir -q install torch==2.3.0+cu121 torchvision==0.18.0+cu121 -f https://download.pytorch.org/whl/torch_stable.html
+        && pip3 --no-cache-dir -q install torch==2.4.1+cu124 torchvision==0.19.1+cu124 --index-url https://download.pytorch.org/whl/cu124
 
 # rest of the python requirements
 COPY requirements.txt .

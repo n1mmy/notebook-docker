@@ -7,10 +7,11 @@ if [ -z "$NOTEBOOK" ] ; then
    exit 1
 fi
 
-IPYTHON=${IPYTHON:-ipython3}
+VENV={$VENV:-/root/venv/bin}
+IPYTHON=${IPYTHON:-${VENV}/ipython3}
 
 tmpfile=$(mktemp /tmp/notebook.exec.XXXXXX.py)
-jupyter nbconvert --log-level WARN --to python "$NOTEBOOK" --output "$tmpfile"
+$VENV/jupyter nbconvert --log-level WARN --to python "$NOTEBOOK" --output "$tmpfile"
 
 cd $(dirname $NOTEBOOK)
 shift # drop notebook name from args

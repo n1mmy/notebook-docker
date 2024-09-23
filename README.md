@@ -5,7 +5,7 @@ This repo contains build scripts and instructions for a Jupyter notebook server 
 I use this personally as a base image for machine learning experiments in the cloud. It may not be maintained or updated on a timely basis, and may change without warning.
 
 It has:
-- Ubuntu 22.04 base image
+- Ubuntu 24.04 base image
 - CUDA 12.4 libraries
 - pytorch 2.4.1 with torchvision
 - JupyterLab notebook server

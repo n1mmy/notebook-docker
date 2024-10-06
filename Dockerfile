@@ -20,7 +20,7 @@ RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - \
 RUN wget -q "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404.pin" -O /etc/apt/preferences.d/cuda-repository-pin-600 \
         && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/3bf863cc.pub \
         && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/ /" && \
-        apt-get install -y --no-install-recommends nvidia-utils-560 > /dev/null && \
+        apt-get install -y --no-install-recommends nvidia-utils-560 cuda-12-6 > /dev/null && \
         apt-get clean -qqy
 
 # Python virtualenv

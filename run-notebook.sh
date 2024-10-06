@@ -7,7 +7,7 @@ if [ -z "$NOTEBOOK" ] ; then
    exit 1
 fi
 
-VENV={$VENV:-/root/venv/bin}
+VENV=${VENV:-/root/venv/bin}
 IPYTHON=${IPYTHON:-${VENV}/ipython3}
 
 tmpfile=$(mktemp /tmp/notebook.exec.XXXXXX.py)

@@ -27,7 +27,7 @@ RUN wget -q "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404
 RUN python3 -m venv /root/venv
 
 # GPU version of torch
-RUN /root/venv/bin/pip3 --no-cache-dir -q install torch==2.4.1+cu124 torchvision==0.19.1+cu124 --index-url https://download.pytorch.org/whl/cu124
+RUN /root/venv/bin/pip3 --no-cache-dir -q install torch==2.5.0 torchvision==0.20.0
 
 # rest of the python requirements
 COPY requirements.txt .

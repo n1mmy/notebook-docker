@@ -6,8 +6,8 @@ I use this personally as a base image for machine learning experiments in the cl
 
 It has:
 - Ubuntu 24.04 base image
-- CUDA 12.4 libraries
-- pytorch 2.4.1 with torchvision
+- CUDA 12.6 libraries
+- pytorch 2.6.0 with torchvision
 - JupyterLab notebook server
 - Node.js 20 for notebook extensions
 - `aws` command line tools and python packages.

@@ -38,9 +38,12 @@ RUN if [ "$VARIANT" = "ml-gpu" ]; then \
         /root/venv/bin/pip3 --no-cache-dir -q install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cpu; \
     fi
 
-# rest of the python requirements
-COPY requirements.txt .
+# python requirements
+COPY requirements.txt requirements-ml.txt ./
 RUN /root/venv/bin/pip3 --no-cache-dir -q install -r requirements.txt
+RUN if [ "$VARIANT" = "ml-gpu" ] || [ "$VARIANT" = "ml-cpu" ]; then \
+        /root/venv/bin/pip3 --no-cache-dir -q install -r requirements-ml.txt; \
+    fi
 
 # activate notebook extensions
 RUN /root/venv/bin/jupyter labextension install jupyter-matplotlib > /dev/null

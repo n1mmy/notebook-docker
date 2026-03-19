@@ -1,0 +1,9 @@
+# ml stuff
+Pillow
+fsspec[s3]
+fsspec[gcs]
+imutils
+numpy
+pytorch_lightning
+wandb
+webdataset

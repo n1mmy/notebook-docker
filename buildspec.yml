@@ -11,13 +11,13 @@ phases:
       - echo Building the Docker image...
       # Override registry base image to pull from ECR instead of
       # docker hub to avoid rate limits.
-      - docker build --build-arg=BASE_REGISTRY=public.ecr.aws/ubuntu/ --build-arg=VARIANT=gpu -t $IMAGE_REPO_NAME:$IMAGE_TAG-gpu .
-      - docker build --build-arg=BASE_REGISTRY=public.ecr.aws/ubuntu/ --build-arg=VARIANT=cpu -t $IMAGE_REPO_NAME:$IMAGE_TAG-cpu .
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG-gpu $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG-gpu
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG-cpu $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG-cpu
+      - docker build --build-arg=BASE_REGISTRY=public.ecr.aws/ubuntu/ --build-arg=VARIANT=ml-gpu -t $IMAGE_REPO_NAME:$IMAGE_TAG-ml-gpu .
+      - docker build --build-arg=BASE_REGISTRY=public.ecr.aws/ubuntu/ --build-arg=VARIANT=ml-cpu -t $IMAGE_REPO_NAME:$IMAGE_TAG-ml-cpu .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG-ml-gpu $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG-ml-gpu
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG-ml-cpu $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG-ml-cpu
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG-gpu
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG-cpu
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG-ml-gpu
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG-ml-cpu

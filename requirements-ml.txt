@@ -1,0 +1,6 @@
+# ml stuff
+Pillow
+imutils
+pytorch_lightning
+wandb
+webdataset

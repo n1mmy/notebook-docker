@@ -1,13 +1,3 @@
-# ml stuff
-Pillow
-fsspec[s3]
-fsspec[gcs]
-imutils
-numpy
-pytorch_lightning
-wandb
-webdataset
-
 # jupyter notebook
 ipympl
 ipywidgets
@@ -21,8 +11,13 @@ python-lsp-server[all]
 
 # additional useful
 awscli
+fsspec[s3]
+fsspec[gcs]
 boto3
 cloudpickle
 cmake
 cython
 more-itertools
+
+# basic math stuff
+numpy

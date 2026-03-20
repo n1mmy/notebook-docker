@@ -11,8 +11,13 @@ python-lsp-server[all]
 
 # additional useful
 awscli
+fsspec[s3]
+fsspec[gcs]
 boto3
 cloudpickle
 cmake
 cython
 more-itertools
+
+# basic math stuff
+numpy

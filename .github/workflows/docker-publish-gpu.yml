@@ -16,7 +16,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>, with repo name remapped if needed
   IMAGE_NAME: ${{ github.event.repository.name == 'notebook-docker' && format('{0}/notebook', github.repository_owner) || github.repository }}-gpu
-  VARIANT=ml-gpu
+  VARIANT: ml-gpu
 
 
 jobs:

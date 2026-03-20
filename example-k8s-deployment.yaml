@@ -38,7 +38,7 @@ spec:
           claimName: notebook-storage
           readOnly: false
       containers:
-      - image: ghcr.io/n1mmy/notebook:latest
+      - image: ghcr.io/n1mmy/notebook:main-ml-gpu
         name: notebook
         env:
         # set a password: 'hi there'

@@ -1,19 +1,34 @@
 # Introduction
 
-This repo contains build scripts and instructions for a Jupyter notebook server with a recent CUDA-enabled pytorch using docker. Additionally there are build configurations and example files for building and deploying the image in the cloud.
+This repo contains build scripts and instructions for a Jupyter notebook server docker image. Additionally there are build configurations and example files for building and deploying the image in the cloud.
 
 I use this personally as a base image for machine learning experiments in the cloud. It may not be maintained or updated on a timely basis, and may change without warning.
 
-It has:
+All variants include:
 - Ubuntu 24.04 base image
-- CUDA 12.6 libraries
-- pytorch 2.6.0 with torchvision
 - JupyterLab notebook server
 - Node.js 20 for notebook extensions
 - `aws` command line tools and python packages.
 
+Additional ML variants (`ml-cpu`, `ml-gpu`) also include:
+- pytorch 2.6.0 with torchvision
+- pytorch-lightning, wandb, webdataset, Pillow, imutils
 
-For quick experiments you can use a pre-built image directly from `ghcr.io/n1mmy/notebook`, either as a complete solution or as a base layer to build on top of. For production use or for customization, you may wish to fork this repository and build the image yourself.
+The `ml-gpu` variant additionally includes:
+- CUDA 12.6 libraries
+
+
+Pre-built images are published to `ghcr.io/n1mmy/notebook` with the following tags:
+
+| Tag suffix | Variant | Description |
+|---|---|---|
+| *(none)* | `no-ml` | Base image: JupyterLab + utilities |
+| `-ml-cpu` | `ml-cpu` | Adds pytorch (CPU) and ML packages |
+| `-ml-gpu` | `ml-gpu` | Adds pytorch (CUDA 12.6) and ML packages |
+
+For example: `ghcr.io/n1mmy/notebook:main`, `ghcr.io/n1mmy/notebook:main-ml-cpu`, `ghcr.io/n1mmy/notebook:main-ml-gpu`.
+
+For quick experiments you can use a pre-built image directly, either as a complete solution or as a base layer to build on top of. For production use or for customization, you may wish to fork this repository and build the image yourself.
 
 
 # Table of Contents
@@ -38,28 +53,44 @@ For quick experiments you can use a pre-built image directly from `ghcr.io/n1mmy
 
 ## Quickstart
 
-If you have a machine with an NVIDIA GPU-enabled version of docker installed [[guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)], you can get started quickly using a pre-built image:
+For GPU workloads, if you have a machine with an NVIDIA GPU-enabled version of docker installed [[guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)]:
 
 ```
-docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook
+docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook:main-ml-gpu
+```
+
+For CPU-only ML workloads:
+
+```
+docker run -it -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook:main-ml-cpu
+```
+
+For a lightweight notebook server without ML packages:
+
+```
+docker run -it -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook:main
 ```
 
 This will print a URL to the console like `http://127.0.0.1:8888/lab?token=f981019486f356267af792986cea36c3c4bc9d106a30952b`. Load this in your browser and you should have a functional Jupyter installation ready for your experiments.
 
 ## Building the image
 
-If you want to make changes -- for example to include more python packages in `requirements.txt` -- you can check out this repository, make changes in the your working copy, and build the image locally:
+If you want to make changes -- for example to include more python packages in `requirements.txt` -- you can check out this repository, make changes in the your working copy, and build the image locally.
+
+Use the `VARIANT` build argument to select which variant to build (`no-ml`, `ml-cpu`, or `ml-gpu`):
 
 ```
 git clone https://github.com/n1mmy/notebook-docker
 cd notebook-docker
+docker build --build-arg VARIANT=ml-gpu -t notebook:ml-gpu .
+docker build --build-arg VARIANT=ml-cpu -t notebook:ml-cpu .
 docker build -t notebook .
 ```
 
-And then run your local copy with:
+And then run your local copy with (for example, the GPU variant):
 
 ```
-docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks notebook
+docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks notebook:ml-gpu
 ```
 
 ## Additional customization
@@ -72,7 +103,7 @@ To allow customization the contents of the `NOTEBOOK_EXTRA_ARGS` environment var
 docker run -it --gpus all -p 8888:8888 \
   -v ~/my_notebook_dir:/root/notebooks \
   -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:56170f5429b35dea081bb659b884b475ca9329a9' \
-  ghcr.io/n1mmy/notebook
+  ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
 Or, if you prefer to disable the password and only allow connections from `localhost`:
@@ -81,7 +112,7 @@ Or, if you prefer to disable the password and only allow connections from `local
 docker run -it --gpus all -p 127.0.0.1:8888:8888 \
   -v ~/my_notebook_dir:/root/notebooks \
   -e "NOTEBOOK_EXTRA_ARGS=--NotebookApp.password='' --NotebookApp.token=''" \
-  ghcr.io/n1mmy/notebook
+  ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
 *NOTE*: turning off password/token authentication can be dangerous. Be sure you understand the security implications and limit access to the notebook server port.
@@ -108,17 +139,23 @@ The file `example-k8s-deployment.yaml` in this repository demonstrates how to gi
 
 # Building in the cloud
 
+Each CI integration builds all three variants and pushes them with the appropriate tag suffix (`-ml-gpu`, `-ml-cpu`, or no suffix for `no-ml`).
+
 ## Google Cloud Build
 
-There is a `cloudbuild.yaml` file provided that builds the image and pushes it to Google Container Registry.
+There is a `cloudbuild.yaml` file provided that builds all three variants and pushes them to Google Container Registry.
 
 See https://cloud.google.com/build/docs/quickstart-automate for a tutorial on setting up a Cloud Build Trigger. You can use this repository instead of the example repo.
 
 ## AWS CodeBuild
 
-There is a `buildspec.yml` file provided that builds the image and pushes it to Amazon Elastic Container Registry.
+There is a `buildspec.yml` file provided that builds all three variants and pushes them to Amazon Elastic Container Registry.
 
 See https://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html for a tutorial on setting up a Codebuild to build the image. You can use this repository directly from Github or fork/copy it to a different Codebuild compatible source.
+
+## GitHub Actions
+
+There is a `.github/workflows/docker-publish.yml` workflow that builds all three variants and pushes them to the GitHub Container Registry (`ghcr.io`) on every push to `main`.
 
 
 # Running in the cloud
@@ -192,12 +229,11 @@ sudo docker run -d --gpus all -p 8888:8888 \
   -v /mnt/efs/fs1/my_notebook_dir:/root/notebooks \
   -v /mnt/local:/root/notebooks/local \
   -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:56170f5429b35dea081bb659b884b475ca9329a9' \
-  ghcr.io/n1mmy/notebook
+  ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
 
 # TODO
 
-- different image flavors (eg w/ and w/o aws)
 - opencv gpu build
 - decord

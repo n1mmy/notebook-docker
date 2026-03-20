@@ -69,6 +69,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           flavor: |
             suffix=${{ matrix.variant != 'no-ml' && format('-{0}', matrix.variant) || '' }}
+            latest=${{ matrix.variant == 'no-ml' && 'auto' || 'false' }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action

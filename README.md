@@ -235,5 +235,4 @@ sudo docker run -d --gpus all -p 8888:8888 \
 
 # TODO
 
-- opencv gpu build
-- decord
+- figure out why github actions don't share a build output when tagging a release. possibly something about build determinism?

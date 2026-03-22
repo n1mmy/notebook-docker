@@ -14,8 +14,8 @@ RUN apt-get update -qqy && \
         apt-get install -qqy tzdata wget curl tmux less vim cmake git software-properties-common build-essential nfs-common jq python3-pip python3-venv > /dev/null && \
         apt-get clean -qqy
 
-# node20 for notebook extensions
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - \
+# node24 for notebook extensions
+RUN curl -sL https://deb.nodesource.com/setup_24.x | bash - \
         && apt-get install -qqy nodejs > /dev/null \
         && apt-get clean -qqy
 
@@ -35,7 +35,7 @@ RUN python3 -m venv /root/venv
 RUN if [ "$VARIANT" = "ml-gpu" ]; then \
         /root/venv/bin/pip3 --no-cache-dir -q install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu128; \
     elif [ "$VARIANT" = "ml-cpu" ]; then \
-        /root/venv/bin/pip3 --no-cache-dir -q install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cpu; \
+        /root/venv/bin/pip3 --no-cache-dir -q install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cpu; \
     fi
 
 # python requirements

@@ -3,6 +3,8 @@ ARG BASE=ubuntu:24.04
 FROM ${BASE_REGISTRY}${BASE}
 
 ARG VARIANT=no-ml
+ARG EXTRA_APT_PACKAGES=""
+ARG EXTRA_PIP_PACKAGES=""
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
@@ -10,7 +12,7 @@ ENV TZ=UTC
 
 RUN apt-get update -qqy && \
         apt-get upgrade -qqy && \
-        apt-get install -qqy tzdata wget curl tmux less vim cmake git software-properties-common build-essential nfs-common jq python3-pip python3-venv > /dev/null && \
+        apt-get install -qqy tzdata wget curl tmux less vim cmake git software-properties-common build-essential nfs-common jq python3-pip python3-venv $EXTRA_APT_PACKAGES > /dev/null && \
         apt-get clean -qqy
 
 # node24 for notebook extensions
@@ -42,7 +44,7 @@ RUN if [ "$VARIANT" = "ml-gpu" ]; then \
 
 # python requirements
 COPY --chown=ubuntu:ubuntu requirements.txt requirements-ml.txt ./
-RUN /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install -r requirements.txt
+RUN /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install -r requirements.txt $EXTRA_PIP_PACKAGES
 RUN if [ "$VARIANT" = "ml-gpu" ] || [ "$VARIANT" = "ml-cpu" ]; then \
         /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install -r requirements-ml.txt; \
     fi

@@ -3,6 +3,7 @@ ARG BASE=ubuntu:24.04
 FROM ${BASE_REGISTRY}${BASE}
 
 ARG VARIANT=no-ml
+ARG INSTALL_AWS=true
 ARG EXTRA_APT_PACKAGES=""
 ARG EXTRA_PIP_PACKAGES=""
 
@@ -12,7 +13,7 @@ ENV TZ=UTC
 
 RUN apt-get update -qqy && \
         apt-get upgrade -qqy && \
-        apt-get install -qqy tzdata wget curl tmux less vim cmake git software-properties-common build-essential nfs-common jq python3-pip python3-venv $EXTRA_APT_PACKAGES > /dev/null && \
+        apt-get install -qqy tzdata wget curl unzip tmux less vim cmake git software-properties-common build-essential nfs-common jq python3-pip python3-venv $EXTRA_APT_PACKAGES > /dev/null && \
         apt-get clean -qqy
 
 # node24 for notebook extensions
@@ -30,6 +31,15 @@ RUN if [ "$VARIANT" = "ml-gpu" ]; then \
         && apt-get update -qqy \
         && apt-get install -y --no-install-recommends cuda-13-0 > /dev/null \
         && apt-get clean -qqy; \
+    fi
+
+# AWS CLI v2 (architecture-aware, optional)
+RUN if [ "$INSTALL_AWS" = "true" ]; then \
+        ARCH=$(uname -m) \
+        && curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o /tmp/awscliv2.zip \
+        && unzip -q /tmp/awscliv2.zip -d /tmp \
+        && /tmp/aws/install \
+        && rm -rf /tmp/awscliv2.zip /tmp/aws; \
     fi
 
 USER ubuntu

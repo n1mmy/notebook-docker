@@ -7,7 +7,6 @@ ARG VARIANT=no-ml
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
 ENV TZ=UTC
-WORKDIR /root
 
 RUN apt-get update -qqy && \
         apt-get upgrade -qqy && \
@@ -28,30 +27,33 @@ RUN if [ "$VARIANT" = "ml-gpu" ]; then \
         && apt-get clean -qqy; \
     fi
 
+USER ubuntu
+WORKDIR /home/ubuntu
+
 # Python virtualenv
-RUN python3 -m venv /root/venv
+RUN python3 -m venv /home/ubuntu/venv
 
 # Torch: GPU or CPU build
 RUN if [ "$VARIANT" = "ml-gpu" ]; then \
-        /root/venv/bin/pip3 --no-cache-dir -q install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu130; \
+        /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu130; \
     elif [ "$VARIANT" = "ml-cpu" ]; then \
-        /root/venv/bin/pip3 --no-cache-dir -q install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cpu; \
+        /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cpu; \
     fi
 
 # python requirements
-COPY requirements.txt requirements-ml.txt ./
-RUN /root/venv/bin/pip3 --no-cache-dir -q install -r requirements.txt
+COPY --chown=ubuntu:ubuntu requirements.txt requirements-ml.txt ./
+RUN /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install -r requirements.txt
 RUN if [ "$VARIANT" = "ml-gpu" ] || [ "$VARIANT" = "ml-cpu" ]; then \
-        /root/venv/bin/pip3 --no-cache-dir -q install -r requirements-ml.txt; \
+        /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install -r requirements-ml.txt; \
     fi
 
 # activate notebook extensions
-RUN /root/venv/bin/jupyter labextension install jupyter-matplotlib > /dev/null
+RUN /home/ubuntu/venv/bin/jupyter labextension install jupyter-matplotlib > /dev/null
 
 
 # Running the notebook server
-COPY run-notebook.sh run-notebook-server.sh ./
+COPY --chown=ubuntu:ubuntu run-notebook.sh run-notebook-server.sh ./
 RUN chmod 755 ./*.sh && mkdir -p notebooks
 EXPOSE 8888
 
-CMD ["/root/run-notebook-server.sh"]
+CMD ["/home/ubuntu/run-notebook-server.sh"]

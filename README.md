@@ -7,15 +7,15 @@ I use this personally as a base image for machine learning experiments in the cl
 All variants include:
 - Ubuntu 24.04 base image
 - JupyterLab notebook server
-- Node.js 20 for notebook extensions
+- Node.js 24 for notebook extensions
 - `aws` command line tools and python packages.
 
 Additional ML variants (`ml-cpu`, `ml-gpu`) also include:
-- pytorch 2.6.0 with torchvision
+- pytorch 2.10.0 with torchvision
 - pytorch-lightning, wandb, webdataset, Pillow, imutils
 
 The `ml-gpu` variant additionally includes:
-- CUDA 12.6 libraries
+- CUDA 13.0 libraries
 
 
 Pre-built images are published to `ghcr.io/n1mmy/notebook` with the following tags:
@@ -24,7 +24,7 @@ Pre-built images are published to `ghcr.io/n1mmy/notebook` with the following ta
 |---|---|---|
 | *(none)* | `no-ml` | Base image: JupyterLab + utilities |
 | `-ml-cpu` | `ml-cpu` | Adds pytorch (CPU) and ML packages |
-| `-ml-gpu` | `ml-gpu` | Adds pytorch (CUDA 12.6) and ML packages |
+| `-ml-gpu` | `ml-gpu` | Adds pytorch (CUDA 13.0) and ML packages |
 
 For example: `ghcr.io/n1mmy/notebook:main`, `ghcr.io/n1mmy/notebook:main-ml-cpu`, `ghcr.io/n1mmy/notebook:main-ml-gpu`.
 
@@ -56,19 +56,19 @@ For quick experiments you can use a pre-built image directly, either as a comple
 For GPU workloads, if you have a machine with an NVIDIA GPU-enabled version of docker installed [[guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)]:
 
 ```
-docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook:main-ml-gpu
+docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/home/ubuntu/notebooks ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
 For CPU-only ML workloads:
 
 ```
-docker run -it -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook:main-ml-cpu
+docker run -it -p 8888:8888 -v ~/my_notebook_dir:/home/ubuntu/notebooks ghcr.io/n1mmy/notebook:main-ml-cpu
 ```
 
 For a lightweight notebook server without ML packages:
 
 ```
-docker run -it -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks ghcr.io/n1mmy/notebook:main
+docker run -it -p 8888:8888 -v ~/my_notebook_dir:/home/ubuntu/notebooks ghcr.io/n1mmy/notebook:main
 ```
 
 This will print a URL to the console like `http://127.0.0.1:8888/lab?token=f981019486f356267af792986cea36c3c4bc9d106a30952b`. Load this in your browser and you should have a functional Jupyter installation ready for your experiments.
@@ -90,19 +90,19 @@ docker build -t notebook .
 And then run your local copy with (for example, the GPU variant):
 
 ```
-docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/root/notebooks notebook:ml-gpu
+docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/home/ubuntu/notebooks notebook:ml-gpu
 ```
 
 ## Additional customization
 
 ### `NOTEBOOK_EXTRA_ARGS`
 
-To allow customization the contents of the `NOTEBOOK_EXTRA_ARGS` environment variable are passed to the JupyterLab server process as command line arguments. This can be used, for example, to set a password on the server instead of having to get a new unique URL each time. The following sets up a notebook server with the password `hi there` (compute the hash for your own password with `echo -n 'your password' | shasum`):
+To allow customization the contents of the `NOTEBOOK_EXTRA_ARGS` environment variable are passed to the JupyterLab server process as command line arguments. This can be used, for example, to set a password on the server instead of having to get a new unique URL each time. The following sets up a notebook server with a password (generate the hash for your password with `echo -n 'your password' | shasum`):
 
 ```
 docker run -it --gpus all -p 8888:8888 \
-  -v ~/my_notebook_dir:/root/notebooks \
-  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:56170f5429b35dea081bb659b884b475ca9329a9' \
+  -v ~/my_notebook_dir:/home/ubuntu/notebooks \
+  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:<YOUR_PASSWORD_HASH>' \
   ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
@@ -110,18 +110,18 @@ Or, if you prefer to disable the password and only allow connections from `local
 
 ```
 docker run -it --gpus all -p 127.0.0.1:8888:8888 \
-  -v ~/my_notebook_dir:/root/notebooks \
+  -v ~/my_notebook_dir:/home/ubuntu/notebooks \
   -e "NOTEBOOK_EXTRA_ARGS=--NotebookApp.password='' --NotebookApp.token=''" \
   ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
 *NOTE*: turning off password/token authentication can be dangerous. Be sure you understand the security implications and limit access to the notebook server port.
 
-### `/root/run-notebook.sh`
+### `/home/ubuntu/run-notebook.sh`
 
 There is an additional shell script packaged in the image designed to allow for running Jupyter notebooks from the command line and in automated jobs.
 
-The script `/root/run-notebook.sh` takes a the first argument as a path to a notebook (`.ipynb`) file. It converts this notebook file to a plain python script then runs that script, passing it any additional command line arguments.
+The script `/home/ubuntu/run-notebook.sh` takes a the first argument as a path to a notebook (`.ipynb`) file. It converts this notebook file to a plain python script then runs that script, passing it any additional command line arguments.
 
 Here is an example docker command that to run a notebook file and print the output to stdout.
 
@@ -221,14 +221,14 @@ sudo mount /dev/nvme1n1 /mnt/local
 
 7. Run notebook server
 ```
-# password: 'hi there'
 # remove /mnt/local line if no instance local storage
 # adjust shm-size argument based on instance RAM size
+# generate password hash with: echo -n 'your password' | shasum
 sudo docker run -d --gpus all -p 8888:8888 \
   --shm-size 64G \
-  -v /mnt/efs/fs1/my_notebook_dir:/root/notebooks \
-  -v /mnt/local:/root/notebooks/local \
-  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:56170f5429b35dea081bb659b884b475ca9329a9' \
+  -v /mnt/efs/fs1/my_notebook_dir:/home/ubuntu/notebooks \
+  -v /mnt/local:/home/ubuntu/notebooks/local \
+  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:<YOUR_PASSWORD_HASH>' \
   ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 

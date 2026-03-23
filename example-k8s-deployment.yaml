@@ -41,21 +41,21 @@ spec:
       - image: ghcr.io/n1mmy/notebook:main-ml-gpu
         name: notebook
         env:
-        # set a password: 'hi there'
-        # echo -n 'your new password' | shasum
+        # set a password: echo -n 'your password' | shasum
         - name: 'NOTEBOOK_EXTRA_ARGS'
-          value: '--NotebookApp.password=sha1:56170f5429b35dea081bb659b884b475ca9329a9'
+          value: '--NotebookApp.password=sha1:<YOUR_PASSWORD_HASH>'
         ports:
         - containerPort: 8888
           name: notebook
         volumeMounts:
         - mountPath: /dev/shm
           name: dshm
-        - mountPath: /root/notebooks
+        - mountPath: /home/ubuntu/notebooks
           name: storage
         resources:
           limits:
             nvidia.com/gpu: 1
           requests:
             cpu: 1
+            memory: 2Gi
 

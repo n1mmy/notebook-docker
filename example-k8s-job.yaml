@@ -14,7 +14,7 @@ spec:
       - name: storage
         emptyDir: {}
       initContainers:
-      - image: alpine/git:latest
+      - image: alpine/git:v2.45.2
         name: git
         volumeMounts:
         - mountPath: /storage
@@ -26,17 +26,17 @@ spec:
         - https://github.com/n1mmy/notebook-docker
         - /storage
       containers:
-      - image: ghcr.io/n1mmy/notebook:latest
+      - image: ghcr.io/n1mmy/notebook:main
         name: notebook
         volumeMounts:
         - mountPath: /dev/shm
           name: dshm
-        - mountPath: /root/notebooks
+        - mountPath: /home/ubuntu/notebooks
           name: storage
         command:
-        - /root/run-notebook.sh
+        - /home/ubuntu/run-notebook.sh
         args:
-        - /root/notebooks/example.ipynb
+        - /home/ubuntu/notebooks/example.ipynb
         - more
         - args
         resources:
@@ -45,5 +45,6 @@ spec:
           #  nvidia.com/gpu: 1
           requests:
             cpu: 1
+            memory: 2Gi
       restartPolicy: Never
   backoffLimit: 0

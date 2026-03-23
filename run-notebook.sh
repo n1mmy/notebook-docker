@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 NOTEBOOK="$1"
 
@@ -13,7 +13,7 @@ IPYTHON=${IPYTHON:-${VENV}/ipython3}
 tmpfile=$(mktemp /tmp/notebook.exec.XXXXXX.py)
 $VENV/jupyter nbconvert --log-level WARN --to python "$NOTEBOOK" --output "$tmpfile"
 
-cd $(dirname $NOTEBOOK)
+cd "$(dirname "$NOTEBOOK")"
 shift # drop notebook name from args
 $IPYTHON "$tmpfile" -- $@
 exitcode=$?

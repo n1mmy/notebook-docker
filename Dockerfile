@@ -23,8 +23,11 @@ RUN curl -sL https://deb.nodesource.com/setup_24.x | bash - \
 # CUDA (gpu variant only)
 RUN if [ "$VARIANT" = "ml-gpu" ]; then \
         wget -q "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404.pin" -O /etc/apt/preferences.d/cuda-repository-pin-600 \
-        && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/3bf863cc.pub \
-        && add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/ /" \
+        && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/3bf863cc.pub \
+            | gpg --dearmor -o /usr/share/keyrings/cuda-archive-keyring.gpg \
+        && echo "deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/ /" \
+            > /etc/apt/sources.list.d/cuda.list \
+        && apt-get update -qqy \
         && apt-get install -y --no-install-recommends cuda-13-0 > /dev/null \
         && apt-get clean -qqy; \
     fi
@@ -57,5 +60,7 @@ RUN /home/ubuntu/venv/bin/jupyter labextension install jupyter-matplotlib > /dev
 COPY --chown=ubuntu:ubuntu run-notebook.sh run-notebook-server.sh ./
 RUN chmod 755 ./*.sh && mkdir -p notebooks
 EXPOSE 8888
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8888/api || exit 1
 
 CMD ["/home/ubuntu/run-notebook-server.sh"]

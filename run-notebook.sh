@@ -7,15 +7,15 @@ if [ -z "$NOTEBOOK" ] ; then
    exit 1
 fi
 
-VENV=${VENV:-/home/ubuntu/venv/bin}
-IPYTHON=${IPYTHON:-${VENV}/ipython3}
+VENV_DIR=${VENV_DIR:-/home/ubuntu/venv}
+. "${VENV_DIR}/bin/activate"
 
 tmpfile=$(mktemp /tmp/notebook.exec.XXXXXX.py)
-$VENV/jupyter nbconvert --log-level WARN --to python "$NOTEBOOK" --output "$tmpfile"
+jupyter nbconvert --log-level WARN --to python "$NOTEBOOK" --output "$tmpfile"
 
 cd "$(dirname "$NOTEBOOK")"
 shift # drop notebook name from args
-$IPYTHON "$tmpfile" -- $@
+${IPYTHON:-ipython3} "$tmpfile" -- $@
 exitcode=$?
 
 rm -f "$tmpfile"

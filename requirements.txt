@@ -1,7 +1,6 @@
 # jupyter notebook
 ipympl
 ipywidgets
-jupyter_http_over_ws
 jupyterhub
 jupyterlab
 jupyterlab-git
@@ -13,7 +12,6 @@ python-lsp-server[all]
 fsspec[s3,gcs]
 boto3
 cloudpickle
-cmake
 cython
 more-itertools
 

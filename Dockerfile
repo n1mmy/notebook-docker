@@ -13,7 +13,7 @@ ENV TZ=UTC
 
 RUN apt-get update -qqy && \
         apt-get upgrade -qqy && \
-        apt-get install -qqy tzdata wget curl unzip tmux less vim cmake git gnupg software-properties-common build-essential nfs-common jq python3-pip python3-venv $EXTRA_APT_PACKAGES > /dev/null && \
+        apt-get install -qqy tzdata wget curl unzip tmux less vim cmake git gnupg build-essential nfs-common jq python3-pip python3-venv $EXTRA_APT_PACKAGES > /dev/null && \
         apt-get clean -qqy
 
 # CUDA (gpu variant only). Any nvidia driver packages (libnvidia-compute etc.)

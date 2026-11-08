@@ -29,7 +29,7 @@ RUN if [ "$VARIANT" = "ml-gpu" ]; then \
         && echo "deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/ /" \
             > /etc/apt/sources.list.d/cuda.list \
         && apt-get update -qqy \
-        && apt-get install -y --no-install-recommends cuda-13-0 > /dev/null \
+        && apt-get install -y --no-install-recommends cuda-13-4 > /dev/null \
         && apt-get clean -qqy; \
     fi
 
@@ -50,9 +50,9 @@ RUN python3 -m venv /home/ubuntu/venv
 
 # Torch: GPU or CPU build
 RUN if [ "$VARIANT" = "ml-gpu" ]; then \
-        /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu130; \
+        /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install torch==2.15.0 torchvision==0.29.2 --index-url https://download.pytorch.org/whl/cu134; \
     elif [ "$VARIANT" = "ml-cpu" ]; then \
-        /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cpu; \
+        /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install torch==2.15.0 torchvision==0.29.2 --index-url https://download.pytorch.org/whl/cpu; \
     fi
 
 # python requirements

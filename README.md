@@ -11,11 +11,11 @@ All variants include:
 - `aws` command line tools and python packages.
 
 Additional ML variants (`ml-cpu`, `ml-gpu`) also include:
-- pytorch 2.10.0 with torchvision
+- pytorch 2.15.0 with torchvision
 - pytorch-lightning, wandb, webdataset, Pillow, imutils
 
 The `ml-gpu` variant additionally includes:
-- CUDA 13.0 libraries
+- CUDA 13.4 libraries
 
 
 Pre-built images are published to `ghcr.io/n1mmy/notebook` with the following tags:
@@ -24,7 +24,7 @@ Pre-built images are published to `ghcr.io/n1mmy/notebook` with the following ta
 |---|---|---|
 | *(none)* | `no-ml` | Base image: JupyterLab + utilities |
 | `-ml-cpu` | `ml-cpu` | Adds pytorch (CPU) and ML packages |
-| `-ml-gpu` | `ml-gpu` | Adds pytorch (CUDA 13.0) and ML packages |
+| `-ml-gpu` | `ml-gpu` | Adds pytorch (CUDA 13.4) and ML packages |
 
 For example: `ghcr.io/n1mmy/notebook:main`, `ghcr.io/n1mmy/notebook:main-ml-cpu`, `ghcr.io/n1mmy/notebook:main-ml-gpu`.
 

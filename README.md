@@ -7,7 +7,6 @@ I use this personally as a base image for machine learning experiments in the cl
 All variants include:
 - Ubuntu 24.04 base image
 - JupyterLab notebook server
-- Node.js 24 for notebook extensions
 - `aws` command line tools and python packages.
 
 Additional ML variants (`ml-cpu`, `ml-gpu`) also include:

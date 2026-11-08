@@ -13,13 +13,8 @@ ENV TZ=UTC
 
 RUN apt-get update -qqy && \
         apt-get upgrade -qqy && \
-        apt-get install -qqy tzdata wget curl unzip tmux less vim cmake git software-properties-common build-essential nfs-common jq python3-pip python3-venv $EXTRA_APT_PACKAGES > /dev/null && \
+        apt-get install -qqy tzdata wget curl unzip tmux less vim cmake git gnupg software-properties-common build-essential nfs-common jq python3-pip python3-venv $EXTRA_APT_PACKAGES > /dev/null && \
         apt-get clean -qqy
-
-# node24 for notebook extensions
-RUN curl -sL https://deb.nodesource.com/setup_24.x | bash - \
-        && apt-get install -qqy nodejs > /dev/null \
-        && apt-get clean -qqy
 
 # CUDA (gpu variant only)
 RUN if [ "$VARIANT" = "ml-gpu" ]; then \
@@ -61,9 +56,6 @@ RUN /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install -r requirements.txt $EX
 RUN if [ "$VARIANT" = "ml-gpu" ] || [ "$VARIANT" = "ml-cpu" ]; then \
         /home/ubuntu/venv/bin/pip3 --no-cache-dir -q install -r requirements-ml.txt; \
     fi
-
-# activate notebook extensions
-RUN /home/ubuntu/venv/bin/jupyter labextension install jupyter-matplotlib > /dev/null
 
 
 # Running the notebook server

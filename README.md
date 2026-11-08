@@ -13,10 +13,7 @@ Additional ML variants (`ml-cpu`, `ml-gpu`) also include:
 - pytorch 2.15.0 with torchvision
 - pytorch-lightning, wandb, webdataset, Pillow, imutils
 
-The `ml-gpu` variant additionally includes:
-- CUDA 13.4 libraries
-
-The `ml-gpu` variant needs an NVIDIA driver from the 580 series or newer on the host. Drivers from 590 on fully support CUDA 13.4; on 580, pytorch runs via CUDA minor version compatibility, but code compiled inside the container may not load.
+The `ml-gpu` variant uses the CUDA 13.4 libraries bundled with pytorch. It needs an NVIDIA driver from the 580 series or newer on the host. Drivers from 590 on fully support CUDA 13.4; on 580, pytorch runs via CUDA minor version compatibility, but code compiled inside the container may not load.
 
 
 Pre-built images are published to `ghcr.io/n1mmy/notebook` with the following tags:
@@ -88,6 +85,8 @@ docker build --build-arg VARIANT=ml-gpu -t notebook:ml-gpu .
 docker build --build-arg VARIANT=ml-cpu -t notebook:ml-cpu .
 docker build -t notebook .
 ```
+
+The full CUDA 13.4 toolkit (`nvcc` etc.) is not included by default, as pytorch does not need it. To compile CUDA code inside the container, add it with `--build-arg INSTALL_CUDA=true`.
 
 And then run your local copy with (for example, the GPU variant):
 

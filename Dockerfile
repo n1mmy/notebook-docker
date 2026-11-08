@@ -16,7 +16,9 @@ RUN apt-get update -qqy && \
         apt-get install -qqy tzdata wget curl unzip tmux less vim cmake git gnupg software-properties-common build-essential nfs-common jq python3-pip python3-venv $EXTRA_APT_PACKAGES > /dev/null && \
         apt-get clean -qqy
 
-# CUDA (gpu variant only)
+# CUDA (gpu variant only). Any nvidia driver packages (libnvidia-compute etc.)
+# are pinned to the 620 branch, so the image never gets driver userspace newer
+# than that. apt reads the pin on its next run, so it is installed first.
 RUN if [ "$VARIANT" = "ml-gpu" ]; then \
         wget -q "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404.pin" -O /etc/apt/preferences.d/cuda-repository-pin-600 \
         && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/3bf863cc.pub \
@@ -24,6 +26,7 @@ RUN if [ "$VARIANT" = "ml-gpu" ]; then \
         && echo "deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/ /" \
             > /etc/apt/sources.list.d/cuda.list \
         && apt-get update -qqy \
+        && apt-get install -y --no-install-recommends nvidia-driver-pinning-620 > /dev/null \
         && apt-get install -y --no-install-recommends cuda-13-4 > /dev/null \
         && apt-get clean -qqy; \
     fi

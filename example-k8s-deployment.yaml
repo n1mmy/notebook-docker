@@ -41,9 +41,11 @@ spec:
       - image: ghcr.io/n1mmy/notebook:main-ml-gpu
         name: notebook
         env:
-        # set a password: echo -n 'your password' | shasum
+        # set a password. generate the hash with:
+        #   docker run --rm -it ghcr.io/n1mmy/notebook:main \
+        #     /home/ubuntu/venv/bin/python -c 'from jupyter_server.auth import passwd; print(passwd())'
         - name: 'NOTEBOOK_EXTRA_ARGS'
-          value: '--NotebookApp.password=sha1:<YOUR_PASSWORD_HASH>'
+          value: '--PasswordIdentityProvider.hashed_password=<YOUR_PASSWORD_HASH>'
         ports:
         - containerPort: 8888
           name: notebook

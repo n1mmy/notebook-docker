@@ -155,7 +155,9 @@ See https://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html fo
 
 ## GitHub Actions
 
-There is a `.github/workflows/docker-publish.yml` workflow that builds all three variants and pushes them to the GitHub Container Registry (`ghcr.io`) on every push to `main`.
+There is a `.github/workflows/docker-publish.yml` workflow that builds all three variants and pushes them to the GitHub Container Registry (`ghcr.io`) on every push to `main` and on version tags (`v*.*.*`). Images are tagged with the branch or tag name, and `latest` is only updated by version tags.
+
+It can also be run by hand from the repository's Actions tab ("Run workflow") to build any branch. A manual run publishes under the branch name, or under the tag you enter (for example `my-test`, giving `my-test`, `my-test-ml-cpu` and `my-test-ml-gpu`), and never updates `latest`.
 
 
 # Running in the cloud

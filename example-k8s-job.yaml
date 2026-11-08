@@ -14,7 +14,7 @@ spec:
       - name: storage
         emptyDir: {}
       initContainers:
-      - image: alpine/git:v2.45.2
+      - image: alpine/git:v2.54.0
         name: git
         volumeMounts:
         - mountPath: /storage

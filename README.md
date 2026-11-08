@@ -7,15 +7,13 @@ I use this personally as a base image for machine learning experiments in the cl
 All variants include:
 - Ubuntu 24.04 base image
 - JupyterLab notebook server
-- Node.js 24 for notebook extensions
 - `aws` command line tools and python packages.
 
 Additional ML variants (`ml-cpu`, `ml-gpu`) also include:
-- pytorch 2.10.0 with torchvision
+- pytorch 2.15.0 with torchvision
 - pytorch-lightning, wandb, webdataset, Pillow, imutils
 
-The `ml-gpu` variant additionally includes:
-- CUDA 13.0 libraries
+The `ml-gpu` variant uses the CUDA 13.4 libraries bundled with pytorch. It needs an NVIDIA driver from the 580 series or newer on the host. Drivers from 590 on fully support CUDA 13.4; on 580, pytorch runs via CUDA minor version compatibility, but code compiled inside the container may not load.
 
 
 Pre-built images are published to `ghcr.io/n1mmy/notebook` with the following tags:
@@ -24,7 +22,7 @@ Pre-built images are published to `ghcr.io/n1mmy/notebook` with the following ta
 |---|---|---|
 | *(none)* | `no-ml` | Base image: JupyterLab + utilities |
 | `-ml-cpu` | `ml-cpu` | Adds pytorch (CPU) and ML packages |
-| `-ml-gpu` | `ml-gpu` | Adds pytorch (CUDA 13.0) and ML packages |
+| `-ml-gpu` | `ml-gpu` | Adds pytorch (CUDA 13.4) and ML packages |
 
 For example: `ghcr.io/n1mmy/notebook:main`, `ghcr.io/n1mmy/notebook:main-ml-cpu`, `ghcr.io/n1mmy/notebook:main-ml-gpu`.
 
@@ -43,6 +41,7 @@ For quick experiments you can use a pre-built image directly, either as a comple
 * [Building in the cloud](#building-in-the-cloud)
   * [Google Cloud Build](#google-cloud-build)
   * [AWS CodeBuild](#aws-codebuild)
+  * [GitHub Actions](#github-actions)
 * [Running in the cloud](#running-in-the-cloud)
   * [Kubernetes](#kubernetes)
   * [Bare AWS instances with EFS](#bare-aws-instances-with-efs)
@@ -53,7 +52,7 @@ For quick experiments you can use a pre-built image directly, either as a comple
 
 ## Quickstart
 
-For GPU workloads, if you have a machine with an NVIDIA GPU-enabled version of docker installed [[guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)]:
+For GPU workloads, if you have a machine with an NVIDIA GPU-enabled version of docker installed [[guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)]:
 
 ```
 docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/home/ubuntu/notebooks ghcr.io/n1mmy/notebook:main-ml-gpu
@@ -87,6 +86,8 @@ docker build --build-arg VARIANT=ml-cpu -t notebook:ml-cpu .
 docker build -t notebook .
 ```
 
+The full CUDA 13.4 toolkit (`nvcc` etc.) is not included by default, as pytorch does not need it. To compile CUDA code inside the container, add it with `--build-arg INSTALL_CUDA=true`.
+
 And then run your local copy with (for example, the GPU variant):
 
 ```
@@ -97,12 +98,19 @@ docker run -it --gpus all -p 8888:8888 -v ~/my_notebook_dir:/home/ubuntu/noteboo
 
 ### `NOTEBOOK_EXTRA_ARGS`
 
-To allow customization the contents of the `NOTEBOOK_EXTRA_ARGS` environment variable are passed to the JupyterLab server process as command line arguments. This can be used, for example, to set a password on the server instead of having to get a new unique URL each time. The following sets up a notebook server with a password (generate the hash for your password with `echo -n 'your password' | shasum`):
+To allow customization the contents of the `NOTEBOOK_EXTRA_ARGS` environment variable are passed to the JupyterLab server process as command line arguments. This can be used, for example, to set a password on the server instead of having to get a new unique URL each time. First generate a hash of your password (this prompts for the password twice):
+
+```
+docker run --rm -it ghcr.io/n1mmy/notebook:main \
+  /home/ubuntu/venv/bin/python -c 'from jupyter_server.auth import passwd; print(passwd())'
+```
+
+The following then sets up a notebook server with that password. Keep the single quotes: the hash contains `$` characters that the shell would otherwise expand.
 
 ```
 docker run -it --gpus all -p 8888:8888 \
   -v ~/my_notebook_dir:/home/ubuntu/notebooks \
-  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:<YOUR_PASSWORD_HASH>' \
+  -e 'NOTEBOOK_EXTRA_ARGS=--PasswordIdentityProvider.hashed_password=<YOUR_PASSWORD_HASH>' \
   ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
@@ -111,7 +119,7 @@ Or, if you prefer to disable the password and only allow connections from `local
 ```
 docker run -it --gpus all -p 127.0.0.1:8888:8888 \
   -v ~/my_notebook_dir:/home/ubuntu/notebooks \
-  -e "NOTEBOOK_EXTRA_ARGS=--NotebookApp.password='' --NotebookApp.token=''" \
+  -e "NOTEBOOK_EXTRA_ARGS=--IdentityProvider.token=''" \
   ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
@@ -123,8 +131,12 @@ There is an additional shell script packaged in the image designed to allow for 
 
 The script `/home/ubuntu/run-notebook.sh` takes a the first argument as a path to a notebook (`.ipynb`) file. It converts this notebook file to a plain python script then runs that script, passing it any additional command line arguments.
 
-Here is an example docker command that to run a notebook file and print the output to stdout.
+Here is an example docker command that runs a notebook file and prints the output to stdout. The script runs from the notebook's directory, so relative paths in the notebook work as they do in the notebook server.
 
+```
+docker run --rm -v ~/my_notebook_dir:/home/ubuntu/notebooks ghcr.io/n1mmy/notebook:main \
+  /home/ubuntu/run-notebook.sh /home/ubuntu/notebooks/my_notebook.ipynb arg1 arg2
+```
 
 An example Kubernetes manifest for a Job that runs a notebook is available in [example-k8s-job.yaml](example-k8s-job.yaml)
 
@@ -178,17 +190,17 @@ The process should be basically the same on other cloud providers as well.
 1. Create an EFS instance
  - Visit https://console.aws.amazon.com/efs/home and click "Create file system"
 
-2. Start an instance running Ubuntu 20.04
- - Visit https://console.aws.amazon.com/ec2/v2/home and click "Launch instance"
- - Type "Ubuntu" into the AMI search box and select "Ubuntu Server 20.04 LTS (HVM), SSD Volume Type" (AMI ID will vary by region)
- - Pick an instance type with a GPU (The new `g5` instances are relatively cheap and quite nice). Click 'Configure Instance Details' not 'Review and Launch' for more options.
- - On the instance details page
-  - Add the EFS instance by clicking "Add file system"
-  - If you want to have the instance able to perform AWS API calls, remember to select a role for the machine on this page.
+2. Start an instance running Ubuntu 24.04
+ - Visit https://console.aws.amazon.com/ec2/home and click "Launch instance"
+ - Under "Application and OS Images", pick Ubuntu and select "Ubuntu Server 24.04 LTS (HVM), SSD Volume Type" (AMI ID will vary by region)
+ - Pick an instance type with a GPU (`g5` and `g6` instances are relatively cheap and quite nice).
+ - Under "Network settings", the default of only allowing SSH is good, and you can use SSH port forwarding to access the notebook server. However, if you want to expose the notebook server to the internet (not recommended) you can add access to port 8888 here.
+ - Under "Configure storage"
+  - Change the size of the root volume. The default 8GB is too small for this image. At least 50GB is recommended.
+  - Under "File systems", click "Edit" and add the EFS file system. It is mounted at `/mnt/efs/fs1` by default.
+ - Under "Advanced details"
+  - If you want to have the instance able to perform AWS API calls, select an IAM instance profile.
   - You may also want to request a Spot instance to pay less money.
-  - Click "Add Storage" to move to the next page.
- - On the Add Storage page change the size of the root disk. The default 8GB is too small for this image. At least 50GB is recommended.
- - Optionally, continue through "Add tags" to "Configure security groups". The default of only allowing SSH is good, and you can use SSH port forwarding to access the notebook server. However, if you want to expose the notebook server to the internet (not recommended) you can add access to port 8888 here.
  - Launch the instance.
 
 3. Once the instance is running, ssh in with port forwarding
@@ -196,22 +208,26 @@ The process should be basically the same on other cloud providers as well.
 
 4. Setup nvidia driver and docker
 ```
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+# nvidia driver, from nvidia's CUDA repository
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt-get update
+sudo apt-get install -y nvidia-open
 
+# docker and the nvidia container toolkit
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+  sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update
+sudo apt-get install -y docker.io nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
 
-sudo wget "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin" -O /etc/apt/preferences.d/cuda-repository-pin-600
-sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
-sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
-
-
-sudo apt install -y --no-install-recommends nvidia-driver-510 nvidia-settings nvidia-docker2
-
-sudo modprobe nvidia
+sudo reboot
 ```
 
 5. Confirm GPU detected.
+ - ssh back in once the instance has rebooted.
  - Run `nvidia-smi` and see a GPU in the output.
 
 6. Add local storage (skip if your instance type doesn't have this)
@@ -225,12 +241,12 @@ sudo mount /dev/nvme1n1 /mnt/local
 ```
 # remove /mnt/local line if no instance local storage
 # adjust shm-size argument based on instance RAM size
-# generate password hash with: echo -n 'your password' | shasum
+# generate password hash as described in NOTEBOOK_EXTRA_ARGS above
 sudo docker run -d --gpus all -p 8888:8888 \
   --shm-size 64G \
   -v /mnt/efs/fs1/my_notebook_dir:/home/ubuntu/notebooks \
   -v /mnt/local:/home/ubuntu/notebooks/local \
-  -e 'NOTEBOOK_EXTRA_ARGS=--NotebookApp.password=sha1:<YOUR_PASSWORD_HASH>' \
+  -e 'NOTEBOOK_EXTRA_ARGS=--PasswordIdentityProvider.hashed_password=<YOUR_PASSWORD_HASH>' \
   ghcr.io/n1mmy/notebook:main-ml-gpu
 ```
 
